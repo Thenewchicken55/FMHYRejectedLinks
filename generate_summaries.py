@@ -22,7 +22,8 @@ def clean_text(text):
     if not text:
         return ""
     text = text.replace('\x00', '')
-    text = re.sub(r'<[^>]+>', ' ', text)
+    text = re.sub(r'<[^>]*>', ' ', text)   # complete tags
+    text = re.sub(r'<[^>]*$', ' ', text)    # truncated tags at end
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 

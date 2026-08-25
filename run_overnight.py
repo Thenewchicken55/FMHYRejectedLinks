@@ -278,7 +278,7 @@ def generate_summary(record):
         parts.append(record["title"].strip())
     if record.get("description"):
         desc = record["description"].strip()
-        if desc and desc != parts[0] if parts else True:
+        if desc and (not parts or desc != parts[0]):
             parts.append(desc[:200])
     if not parts and record.get("body"):
         # Use first sentence of body
