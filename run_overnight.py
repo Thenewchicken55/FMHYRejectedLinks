@@ -109,13 +109,15 @@ def parse_html(filepath):
     for block in blocks:
         author_m = re.search(r'class=chatlog__author[^>]*>([^<]+)<', block)
         ts_m = re.search(r'class=chatlog__timestamp[^>]*>([^<]+)<', block)
-        text_m = re.search(r'chatlog__content[^>]*>(.*)', block, re.DOTALL)
+        text_m = re.search(r'chatlog__markdown-preserve[^>]*>(.*?)</span>', block, re.DOTALL)
+        if not text_m:
+            text_m = re.search(r'chatlog__content[^>]*>(.*?)</div>', block, re.DOTALL)
 
         links = link_re.findall(block)
         context = ""
         if text_m:
             raw = re.sub(r'<[^>]+>', ' ', text_m.group(1)[:500]).strip()
-            context = raw[:200]
+            context = re.sub(r'\s+', ' ', raw)[:200]
 
         if links:
             messages.append({
@@ -258,18 +260,55 @@ def save_progress(data):
     os.replace(tmp, PROGRESS_JSON)
 
 
+def clean_context(text):
+    """Strip HTML tags (complete and truncated) and normalize whitespace."""
+    if not text:
+        return ""
+    clean = text.replace('\x00', '')
+    clean = re.sub(r'<[^>]*>', ' ', clean)   # complete tags
+    clean = re.sub(r'<[^>]*$', ' ', clean)    # truncated tags at end
+    clean = re.sub(r'\s+', ' ', clean).strip()
+    return clean[:300]
+
+
+def generate_summary(record):
+    """Generate a one-line summary from title + description + body."""
+    parts = []
+    if record.get("title"):
+        parts.append(record["title"].strip())
+    if record.get("description"):
+        desc = record["description"].strip()
+        if desc and desc != parts[0] if parts else True:
+            parts.append(desc[:200])
+    if not parts and record.get("body"):
+        # Use first sentence of body
+        body = record["body"].strip()
+        first_sentence = re.split(r'[.!?]\s', body)
+        if first_sentence:
+            parts.append(first_sentence[0][:200])
+    summary = " — ".join(parts) if parts else ""
+    return summary[:400]
+
+
 def write_csv(data):
     if not data:
         return
     fields = ["url", "title", "description", "body", "status",
               "final_url", "author", "timestamp", "context",
-              "also_mentioned_by", "error"]
+              "also_mentioned_by", "error", "summary"]
     tmp = OUTPUT_CSV + ".tmp"
     with open(tmp, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         for r in data:
-            w.writerow({k: r.get(k, "") for k in fields})
+            row = {k: r.get(k, "") for k in fields}
+            row["context"] = clean_context(row["context"])
+            row["summary"] = generate_summary(r)
+            # Strip NUL from all fields
+            for k in row:
+                if isinstance(row[k], str):
+                    row[k] = row[k].replace('\x00', '')
+            w.writerow(row)
     os.replace(tmp, OUTPUT_CSV)
 
 
