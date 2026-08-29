@@ -1,0 +1,10 @@
+{
+  "name": "fmhy-rejected-links",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "site": "bun run site/server.ts",
+    "export": "bash scripts/export_discord.sh"
+  }
+}

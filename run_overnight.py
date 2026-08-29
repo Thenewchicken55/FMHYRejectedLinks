@@ -38,11 +38,17 @@ except ImportError:
 DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(DIR)
 
-HTML_FILE = "FMHY - 🗑 _ Remove - remove-sites [986617857133649921].html"
+import argparse
+_parser = argparse.ArgumentParser(description="Fetch metadata for links found in a Discord HTML export")
+_parser.add_argument("--input", default="FMHY - 🗑 _ Remove - remove-sites [986617857133649921].html",
+                      help="Path to the Discord HTML export to parse for links")
+_args, _ = _parser.parse_known_args()
+
+HTML_FILE = _args.input
 OUTPUT_CSV = "rejected_sites.csv"
 PROGRESS_JSON = "progress.json"
 LOG_FILE = f"overnight_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
-TOTAL_EXPECTED = 25280  # known unique links from prior parse
+TOTAL_EXPECTED = 25280  # known unique links from prior parse; adjusted at runtime if exceeded
 
 BATCH_SIZE = 500        # links per batch before writing CSV
 MAX_WORKERS = 25        # concurrent fetches
@@ -338,6 +344,9 @@ def main():
 
     remaining = [l for l in all_links if l["url"] not in done_urls]
     log(f"Remaining to fetch: {len(remaining)}")
+
+    global TOTAL_EXPECTED
+    TOTAL_EXPECTED = len(done_urls) + len(remaining)
 
     if not remaining:
         log("Nothing to fetch — all done!")

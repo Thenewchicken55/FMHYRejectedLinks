@@ -3,3 +3,23 @@ __pycache__/
 .DS_Store
 test_sample.csv
 run_output.log
+*.log
+
+# secrets
+.env
+
+# local tool state / checkpoints, not needed in the repo
+.freebuff/
+node_modules/
+progress.json
+rejected_sites_partial.csv
+
+# raw Discord exports (large; regenerate with npm run export)
+exports/
+*.html
+!site/*.html
+
+# downloaded DiscordChatExporter.Cli binary + export bookkeeping
+tools/
+.last_export_checkpoint
+.venv/

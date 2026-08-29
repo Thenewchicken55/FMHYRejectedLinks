@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Link Directory</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Link Directory</h1>
+  <p class="subtitle" id="subtitle">Loading&hellip;</p>
+  <input id="search" type="search" placeholder="Search by title, description, or URL&hellip;" autocomplete="off">
+</header>
+
+<main>
+  <ul id="results"></ul>
+  <div id="empty" class="empty" hidden>No matches found.</div>
+  <nav id="pager" class="pager" hidden>
+    <button id="prev">&larr; Prev</button>
+    <span id="pageInfo"></span>
+    <button id="next">Next &rarr;</button>
+  </nav>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
