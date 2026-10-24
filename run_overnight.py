@@ -5,7 +5,7 @@ Resumes from progress.json, fetches all remaining links in batches,
 writes CSV after each batch, and logs progress.
 
 Usage:
-    python3 run_overnight.sh           # run in foreground
+    python3 run_overnight.py           # run in foreground
     nohup python3 run_overnight.py &   # run in background (overnight)
 
 Press Ctrl+C to stop safely — progress is saved every batch.
@@ -29,10 +29,7 @@ try:
     import requests
     from bs4 import BeautifulSoup
 except ImportError:
-    print("Installing dependencies...")
-    os.system("pip3 install beautifulsoup4 requests")
-    import requests
-    from bs4 import BeautifulSoup
+    sys.exit("Missing dependencies. Run: pip install -r requirements.txt")
 
 # ── Config ──────────────────────────────────────────────────────────────────
 DIR = os.path.dirname(os.path.abspath(__file__))

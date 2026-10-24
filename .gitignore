@@ -19,7 +19,8 @@ exports/
 *.html
 !site/*.html
 
-# downloaded DiscordChatExporter.Cli binary + export bookkeeping
+# downloaded DiscordChatExporter.Cli binary
+# (.last_export_checkpoint is intentionally tracked so the scheduled refresh
+#  workflow knows where the previous export stopped)
 tools/
-.last_export_checkpoint
 .venv/
