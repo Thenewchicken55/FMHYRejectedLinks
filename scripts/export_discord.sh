@@ -7,16 +7,16 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-if [ ! -f .env ]; then
-  echo "ERROR: .env not found. Copy .env.example to .env and fill in DISCORD_TOKEN." >&2
-  exit 1
+# Credentials come from .env locally, or from real environment variables
+# (e.g. a GitHub Actions secret) when there is no .env file.
+if [ -f .env ]; then
+  set -a
+  source .env
+  set +a
 fi
-set -a
-source .env
-set +a
 
-: "${DISCORD_TOKEN:?DISCORD_TOKEN not set in .env}"
-: "${DISCORD_CHANNEL_ID:?DISCORD_CHANNEL_ID not set in .env}"
+: "${DISCORD_TOKEN:?DISCORD_TOKEN is not set. Copy .env.example to .env and fill it in (or export it in the environment).}"
+: "${DISCORD_CHANNEL_ID:?DISCORD_CHANNEL_ID is not set (see .env.example).}"
 
 DCE_DIR="tools/DiscordChatExporter.Cli"
 DCE_BIN="$DCE_DIR/DiscordChatExporter.Cli"
@@ -74,14 +74,13 @@ if [ ! -s "$OUTPUT_HTML" ]; then
 fi
 
 echo "Export saved to $OUTPUT_HTML"
-echo "$NOW" > "$CHECKPOINT_FILE"
 
 # ── Python deps (venv keeps this off the system-managed interpreter) ───────
 if [ ! -x ".venv/bin/python3" ]; then
   echo "Setting up Python virtualenv..."
   python3 -m venv .venv
   .venv/bin/pip install --quiet --upgrade pip
-  .venv/bin/pip install --quiet requests beautifulsoup4
+  .venv/bin/pip install --quiet -r requirements.txt
 fi
 PY=".venv/bin/python3"
 
@@ -93,5 +92,9 @@ echo "Fetching link metadata (resumes/appends into rejected_sites.csv)..."
 echo "Rebuilding final_links.csv/json..."
 "$PY" build_final_dataset.py
 cp final_links.json site/data.json
+
+# Only advance the checkpoint once everything above succeeded, so a failed
+# run never causes messages to be skipped on the next attempt.
+echo "$NOW" > "$CHECKPOINT_FILE"
 
 echo "Done. Run 'npm run site' (or: bun run site/server.ts) to preview locally."
