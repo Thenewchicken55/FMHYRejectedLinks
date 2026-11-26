@@ -1,0 +1,23 @@
+# Deployments only need the static site in site/.
+# Everything below is the Python scraping pipeline, its venv and its data dumps.
+.venv
+.env
+.env.*
+__pycache__
+*.py
+*.log
+*.csv
+/progress.json
+/final_links.json
+/requirements.txt
+/mise.toml
+/.last_export_checkpoint
+/exports
+/tools
+/scripts
+/.cloud-attachments
+/.freebuff
+/.git
+/.github
+/FMHY*.html
+/site/server.ts
